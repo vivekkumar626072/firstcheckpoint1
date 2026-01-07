@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Machine Efficiency Tool</title>
+    <link rel="stylesheet" href="\static\style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>High-Tech Machine Efficiency Analyzer</h1>
+
+    <form id="machineForm">
+        <input type="number" step="any" name="input_power" placeholder="Input Power (kW)" required>
+        <input type="number" step="any" name="output_power" placeholder="Output Power (kW)" required>
+        <input type="number" step="any" name="temperature" placeholder="Temperature (°C)" required>
+        <input type="number" step="any" name="vibration" placeholder="Vibration" required>
+        <input type="number" step="any" name="load" placeholder="Load (%)" required>
+        <button type="submit">Analyze</button>
+    </form>
+
+    <div id="result" class="result">Result</div>
+</div>
+
+<script>
+document.getElementById("machineForm").onsubmit = async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    const response = await fetch("/analyze", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await response.json();
+
+    let statusColor = "green";
+    let recommendation = "Machine operating optimally.";
+
+    if (data.health_score < 80) {
+        statusColor = "orange";
+        recommendation = "Monitor vibration and temperature.";
+    }
+    if (data.health_score < 50) {
+        statusColor = "red";
+        recommendation = "Immediate maintenance recommended!";
+    }
+
+    document.getElementById("result").innerHTML = `
+        <h2>Analysis Results</h2>
+
+        <p><b>Efficiency:</b> ${data.efficiency}%</p>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width:${data.efficiency}%"></div>
+        </div>
+
+        <p><b>Health Score:</b> ${data.health_score}</p>
+        <p><b>Predicted Efficiency:</b> ${data.predicted_efficiency}%</p>
+
+        <p><b>Status:</b>
+            <span class="status ${statusColor}">
+                ${data.status}
+            </span>
+        </p>
+
+        <p><b>AI Recommendation:</b> ${recommendation}</p>
+    `;
+};
+</script>
+
+</body>
+</html>
